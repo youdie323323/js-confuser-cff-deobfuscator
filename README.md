@@ -1,4 +1,4 @@
-# Js-confuser cff deobfuscator
+# Js-Confuser cff deobfuscator
 
 ## Instruction
 
