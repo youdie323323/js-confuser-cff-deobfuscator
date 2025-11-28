@@ -9,7 +9,7 @@
 npm install
 ```
 
-And then put the code to obfuscate, for `input/obfuscated.js`
+And then put the code to deobfuscate, for `input/obfuscated.js`
 
 And then run `index.ts` with:
 ```bash
