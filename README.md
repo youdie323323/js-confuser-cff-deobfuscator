@@ -3,20 +3,20 @@
 ## Instruction
 
 1. Download and unzip this project
-2. Open terminal under unzipped file, then paste and enter:
+2. Open a terminal in the unzipped directory, then paste and enter:
 
 ```bash
 npm install
 ```
 
-And then put the code to deobfuscate, for `input/obfuscated.js`
+And then put the code to deobfuscate at `input/obfuscated.js`
 
 And then run `index.ts` with:
 ```bash
 npx tsx index.ts
 ```
 
-You got your terminal printed like:
+You will see output like:
 
 <details>
 
@@ -90,10 +90,10 @@ Successfully deobfuscated, writing result to output/deobfuscated.js
 
 </details>
 
-Open `output/deobfuscated.js`, and you finally got the deobfuscated code.
+Open `output/deobfuscated.js`, and you will have the deobfuscated code.
 
 ## Limitation
 
-You can't deobfuscate, if original un-obfuscated code has branches or similar (especially, in block to control-flow flat)  
+You cannot deobfuscate code if the original unobfuscated code has branches or similar structures  
 
-**Will support later**
+**Will be supported later**
