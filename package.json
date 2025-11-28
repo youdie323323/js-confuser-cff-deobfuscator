@@ -1,5 +1,5 @@
 {
-  "name": "js-confuser-deobfuscator",
+  "name": "js-confuser-cff-deobfuscator",
   "version": "1.0.0",
   "dependencies": {
     "@babel/generator": "^7.28.3",
