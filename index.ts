@@ -146,6 +146,8 @@ function findNonEmptyCase(
                         : null,
             );
 
+            const literalConstants: LiteralConstants = {};
+
             const flowPositionParamNameSet = new Set(flowPositionParamNames);
 
             const flowPositions: Record<string, number> = {};
@@ -258,9 +260,7 @@ function findNonEmptyCase(
                 console.log("Constant holder with context property:", constantHolderWithContextPropertyName);
             }
 
-            const { node: cffDispatchSwitchNode } = cffDispatchSwitch;
-
-            const finalizeFlowStatements = (ourCase: t.SwitchCase): t.SwitchCase => {
+            const finalizeFlow = (ourCase: t.SwitchCase): t.SwitchCase => {
                 const clonedCase = t.cloneNode(ourCase, true);
 
                 clonedCase.consequent = clonedCase.consequent.filter(statement => !t.isBreakStatement(statement));
@@ -310,10 +310,6 @@ function findNonEmptyCase(
 
                 return clonedCase;
             };
-
-            const originalBlockBody: Array<t.Statement> = new Array();
-
-            let flowWithContext: string = constantHolderName;
 
             const summateFlowPositions = (flowPositions: FlowPositions): number =>
                 Object.values(flowPositions).reduce(
@@ -407,6 +403,8 @@ function findNonEmptyCase(
                 t.isIdentifier(statement.expression.right.object, { name: constantHolderName }) &&
                 t.isIdentifier(statement.expression.right.property, { name: constantHolderInternalPropertyName });
 
+            let flowWithContext: string = constantHolderName;
+
             const updateFlowWithContextByFlow = ({ consequent }: t.SwitchCase) =>
                 consequent.forEach(statement => {
                     if (isStatementFlowWithContextChange(statement)) {
@@ -416,7 +414,9 @@ function findNonEmptyCase(
                     }
                 });
 
-            const literalConstants: LiteralConstants = {};
+            const originalBlockBody: Array<t.Statement> = new Array;
+
+            const { node: cffDispatchSwitchNode } = cffDispatchSwitch;
 
             while (true) {
                 const dynamicFlows =
@@ -442,7 +442,7 @@ function findNonEmptyCase(
                 );
 
                 // Push to block body for construction
-                originalBlockBody.push(...finalizeFlowStatements(dynamicFlow).consequent);
+                originalBlockBody.push(...finalizeFlow(dynamicFlow).consequent);
 
                 if (dynamicFlow.consequent.find(statement => t.isReturnStatement(statement))) // If return is found, break the loop
                     break;
