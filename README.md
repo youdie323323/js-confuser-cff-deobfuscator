@@ -311,4 +311,5 @@ Open `output/deobfuscated.js`, and you will have the deobfuscated code.
 If you try a complex code to this script, then the script never ends (since its causes infinite loop for some reason).  
 You may try to deobfuscate each CFF individually.   
 
-**This script doesn't handle variables correctly. We will fix it later, but for now, you must handle this manually**
+1. This script doesn't handle variables correctly. We will fix this later, but for now, you must handle this manually
+2. This script doesn't handle: "CFF in CFF", we will fix this later
