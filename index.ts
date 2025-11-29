@@ -292,7 +292,7 @@ function findNextNonEmptyFlow(
 
             const { node: cffDispatchSwitchNode } = cffDispatchSwitch;
 
-            const finalizeFlowStatements = (statements: Array<t.Statement>, flowPositions: FlowPositions): Array<t.Statement> => {
+            const finalizeFlowStatements = (statements: Array<t.Statement>): Array<t.Statement> => {
                 statements = statements.filter(statement => !t.isBreakStatement(statement));
 
                 const removeStatementFromStatements = (statement: t.Statement) =>
@@ -333,19 +333,6 @@ function findNextNonEmptyFlow(
                 statements.forEach(statement => {
                     if (isStatementFlowWithContextChange(statement))
                         removeStatementFromStatements(statement);
-                });
-
-                // Replace "slKK7_c + -142" -> "143 + -142"
-                // This will simplified on last step (webcrack)
-                traverse(t.file(t.program(statements)), {
-                    Identifier(path) {
-                        if (
-                            path.isReferencedIdentifier() &&
-                            path.isIdentifier() &&
-                            flowPositionParamNameSet.has(path.node.name)
-                        )
-                            path.replaceWith(t.valueToNode(flowPositions[path.node.name]));
-                    },
                 });
 
                 return statements;
@@ -552,6 +539,19 @@ function findNextNonEmptyFlow(
                     if (isFlowPositionStepStatement(statement))
                         flowPositions[statement.expression.left.name] +=
                             numericLiteralOrUnaryExpressionToValue(statement.expression.right);
+
+                    // Replace "slKK7_c + -142" -> "143 + -142"
+                    // This will simplified on last step (webcrack)
+                    traverse(t.file(t.program([statement])), {
+                        Identifier(path) {
+                            if (
+                                path.isReferencedIdentifier() &&
+                                path.isIdentifier() &&
+                                flowPositionParamNameSet.has(path.node.name)
+                            )
+                                path.replaceWith(t.valueToNode(flowPositions[path.node.name]));
+                        },
+                    });
                 }
 
                 return {
@@ -681,11 +681,11 @@ function findNextNonEmptyFlow(
                     const targetFlowTransition = computeFlowTransition(targetFlow, literalConstants, flowPositions);
 
                     if (targetFlowTransition.type === "end") {
-                        blockBody.push(...finalizeFlowStatements(targetFlowTransition.flowBlockBody, flowPositions));
+                        blockBody.push(...finalizeFlowStatements(targetFlowTransition.flowBlockBody));
 
                         break;
                     } else if (targetFlowTransition.type === "linear") {
-                        blockBody.push(...finalizeFlowStatements(targetFlowTransition.flowBlockBody, flowPositions));
+                        blockBody.push(...finalizeFlowStatements(targetFlowTransition.flowBlockBody));
 
                         literalConstants = targetFlowTransition.literalConstants;
                         flowPositions = targetFlowTransition.flowPositions;
@@ -712,7 +712,7 @@ function findNextNonEmptyFlow(
                         const falseBlock = reconstructBlock(falseLiteralConstants, falseFlowPositions, mergedSum);
 
                         blockBody.push(
-                            ...finalizeFlowStatements(targetFlowTransition.remainLinearFlowBlockBody, flowPositions),
+                            ...finalizeFlowStatements(targetFlowTransition.remainLinearFlowBlockBody),
                             t.ifStatement(
                                 targetFlowTransition.test,
                                 t.blockStatement(trueBlock),

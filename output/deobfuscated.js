@@ -71,8 +71,8 @@ var JavascriptObfuscator = {
     cPqXmO.expect("\\x61\\x62\\x22\\x63\\x64", "ab\"cd");
     cPqXmO.test_function(JavascriptObfuscator.detect, "JavascriptObfuscator.detect");
     cPqXmO.expect("", false);
-    cPqXmO.expect("abcd", -439 != -119);
-    cPqXmO.expect("var _0xaaaa", -439 == 188);
+    cPqXmO.expect("abcd", -279 != -279);
+    cPqXmO.expect("var _0xaaaa", -279 == 188);
     cPqXmO.expect("var _0xaaaa = [\"a\", \"b\"]", true);
     cPqXmO.expect("var _0xaaaa=[\"a\", \"b\"]", -439 != 98);
     cPqXmO.expect("var _0x1234=[\"a\",\"b\"]", true);
