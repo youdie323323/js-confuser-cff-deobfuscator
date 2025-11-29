@@ -1,84 +1,81 @@
-(() => {
-  if (window.customElements) {
-    var h = window.HTMLElement;
-    var m = window.customElements.define;
-    var n = window.customElements.get;
-    var k = new Map();
-    var l = new Map();
-    var e = false;
-    var f = false;
-    window.HTMLElement = function () {
-      if (!e) {
-        var a = k.get(this.constructor);
-        a = n.call(window.customElements, a);
-        f = true;
-        return new a();
+var JavascriptObfuscator = {
+  detect: function (str) {
+    return new RegExp("^var _0x[a-f0-9]+ ?\\= ?\\[", "").test(str);
+  },
+  unpack: function (str) {
+    if (JavascriptObfuscator.detect(str)) {
+      var matches = new RegExp("var (_0x[a-f\\d]+) ?\\= ?\\[(.*?)\\];", "").exec(str);
+      if (matches) {
+        var var_name = matches[1];
+        var strings = JavascriptObfuscator._smart_split(matches[2]);
+        str = str.substring(matches[0].length);
+        for (var k in strings) {
+          str = str.replace(new RegExp(var_name + "\\[" + k + "\\]", "g"), JavascriptObfuscator._fix_quotes(JavascriptObfuscator._unescape(strings[k])));
+        }
       }
-      e = false;
-    };
-    window.HTMLElement.prototype = h.prototype;
-    window.HTMLElement.es5Shimmed = true;
-    Object.defineProperty(window, "customElements", {
-      value: window.customElements,
-      configurable: true,
-      writable: true
-    });
-    Object.defineProperty(window.customElements, "define", {
-      value: (a, b) => {
-        psUqyio.drae5lD = b.prototype;
-        psUqyio.NINXwgo = class extends h {
-          constructor() {
-            super();
-            Object.setPrototypeOf(this, psUqyio.drae5lD);
-            if (!f) {
-              e = true;
-              try {
-                b.call(this);
-              } catch (p) {
-                throw Error(`Constructing ${a}: ${p}`);
-              }
-            }
-            f = false;
-          }
-        };
-        NINXwgo.observedAttributes = b.observedAttributes;
-        EwWZ7J.connectedCallback = drae5lD.connectedCallback;
-        EwWZ7J.disconnectedCallback = drae5lD.disconnectedCallback;
-        EwWZ7J.attributeChangedCallback = drae5lD.attributeChangedCallback;
-        EwWZ7J.adoptedCallback = drae5lD.adoptedCallback;
-        k.set(b, a);
-        l.set(a, b);
-        if (m) {
-          m.call(window.customElements, a, NINXwgo);
-        } else {
-          console.log("branch else");
-        }
-      },
-      configurable: true,
-      writable: true
-    });
-    Object.defineProperty(window.customElements, "get", {
-      value: a => {
-        return l.get(a);
-      },
-      configurable: true,
-      writable: true
-    });
-    if (navigator.userAgent.match(new RegExp("Version\\/(10\\..*|11\\.0\\..*)Safari", ""))) {
-      const a = HTMLElement.prototype.constructor;
-      Object.defineProperty(HTMLElement.prototype, "constructor", {
-        configurable: true,
-        get() {
-          return a;
-        },
-        set(b) {
-          Object.defineProperty(this, "constructor", {
-            value: b,
-            configurable: true,
-            writable: true
-          });
-        }
-      });
     }
+    return str;
+  },
+  _fix_quotes: function (str) {
+    LlAXqQU.RLyI_B = new RegExp("^\"(.*)\"$", "").exec(str);
+    if (LlAXqQU.RLyI_B) {
+      str = RLyI_B[slKK7_c + -142];
+      str = "'" + str.replace(new RegExp("'", "g"), "\\'") + "'";
+      return str;
+    } else {
+      return str;
+    }
+  },
+  _smart_split: function (str) {
+    XmabiS.lsNAVr = [];
+    XmabiS.vR7pZf = 0;
+    while (vR7pZf < str.length) {
+      if (str.charAt(vR7pZf) === "\"") {
+        rtWkCg.XmabiS.Yp1HK6Z = "";
+        vR7pZf += 1;
+        while (vR7pZf < str.length) {
+          if (str.charAt(vR7pZf) === "\"") {
+            break;
+          }
+          if (str.charAt(vR7pZf) === "\\") {
+            Yp1HK6Z += "\\";
+            vR7pZf++;
+          }
+          Yp1HK6Z += str.charAt(vR7pZf);
+          vR7pZf++;
+        }
+        lsNAVr.push("\"" + Yp1HK6Z + "\"");
+      }
+      vR7pZf += vlQMEen + -47;
+    }
+    return lsNAVr;
+  },
+  _unescape: function (str) {
+    for (luOJDw.SuSQwW = drMjEl + -119; luOJDw.SuSQwW < 128; luOJDw.SuSQwW++) {
+      str = str.replace(new RegExp("\\\\x" + luOJDw.SuSQwW.toString(drMjEl + -135), "ig"), String.fromCharCode(luOJDw.SuSQwW));
+    }
+    str = str.replace(new RegExp("\\\\x09", "g"), "\t");
+    return str;
+  },
+  run_tests: function (sanity_test) {
+    dcdG1OW.cPqXmO = sanity_test || new SanityTest();
+    dcdG1OW.cPqXmO.test_function(JavascriptObfuscator._smart_split, "JavascriptObfuscator._smart_split");
+    cPqXmO.expect("", []);
+    cPqXmO.expect("\"a\", \"b\"", ["\"a\"", "\"b\""]);
+    cPqXmO.expect("\"aaa\",\"bbbb\"", ["\"aaa\"", "\"bbbb\""]);
+    cPqXmO.expect("\"a\", \"b\\\"\"", ["\"a\"", "\"b\\\"\""]);
+    cPqXmO.test_function(JavascriptObfuscator._unescape, "JavascriptObfuscator._unescape");
+    cPqXmO.expect("\\x40", "@");
+    cPqXmO.expect("\\x10", "\\x10");
+    cPqXmO.expect("\\x1", "\\x1");
+    cPqXmO.expect("\\x61\\x62\\x22\\x63\\x64", "ab\"cd");
+    cPqXmO.test_function(JavascriptObfuscator.detect, "JavascriptObfuscator.detect");
+    cPqXmO.expect("", false);
+    cPqXmO.expect("abcd", T54l94 != -(T54l94 + 558));
+    cPqXmO.expect("var _0xaaaa", T54l94 == 188);
+    cPqXmO.expect("var _0xaaaa = [\"a\", \"b\"]", true);
+    cPqXmO.expect("var _0xaaaa=[\"a\", \"b\"]", T54l94 != T54l94 + 537);
+    cPqXmO.expect("var _0x1234=[\"a\",\"b\"]", true);
+    return cPqXmO;
   }
-})();
+};
