@@ -19,7 +19,7 @@ var JavascriptObfuscator = {
   _fix_quotes: function (str) {
     LlAXqQU.RLyI_B = new RegExp("^\"(.*)\"$", "").exec(str);
     if (LlAXqQU.RLyI_B) {
-      str = RLyI_B[slKK7_c + -142];
+      str = RLyI_B[1];
       str = "'" + str.replace(new RegExp("'", "g"), "\\'") + "'";
       return str;
     } else {
@@ -46,13 +46,13 @@ var JavascriptObfuscator = {
         }
         lsNAVr.push("\"" + Yp1HK6Z + "\"");
       }
-      vR7pZf += vlQMEen + -47;
+      vR7pZf += 1;
     }
     return lsNAVr;
   },
   _unescape: function (str) {
-    for (luOJDw.SuSQwW = drMjEl + -119; luOJDw.SuSQwW < 128; luOJDw.SuSQwW++) {
-      str = str.replace(new RegExp("\\\\x" + luOJDw.SuSQwW.toString(drMjEl + -135), "ig"), String.fromCharCode(luOJDw.SuSQwW));
+    for (luOJDw.SuSQwW = 32; luOJDw.SuSQwW < 128; luOJDw.SuSQwW++) {
+      str = str.replace(new RegExp("\\\\x" + luOJDw.SuSQwW.toString(16), "ig"), String.fromCharCode(luOJDw.SuSQwW));
     }
     str = str.replace(new RegExp("\\\\x09", "g"), "\t");
     return str;
@@ -71,10 +71,10 @@ var JavascriptObfuscator = {
     cPqXmO.expect("\\x61\\x62\\x22\\x63\\x64", "ab\"cd");
     cPqXmO.test_function(JavascriptObfuscator.detect, "JavascriptObfuscator.detect");
     cPqXmO.expect("", false);
-    cPqXmO.expect("abcd", T54l94 != -(T54l94 + 558));
-    cPqXmO.expect("var _0xaaaa", T54l94 == 188);
+    cPqXmO.expect("abcd", -439 != -119);
+    cPqXmO.expect("var _0xaaaa", -439 == 188);
     cPqXmO.expect("var _0xaaaa = [\"a\", \"b\"]", true);
-    cPqXmO.expect("var _0xaaaa=[\"a\", \"b\"]", T54l94 != T54l94 + 537);
+    cPqXmO.expect("var _0xaaaa=[\"a\", \"b\"]", -439 != 98);
     cPqXmO.expect("var _0x1234=[\"a\",\"b\"]", true);
     return cPqXmO;
   }

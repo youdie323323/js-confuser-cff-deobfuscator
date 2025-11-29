@@ -3,12 +3,14 @@ import type { NodePath } from "@babel/traverse";
 import traverse from "@babel/traverse";
 import generate from "@babel/generator";
 import * as t from "@babel/types";
-import { readFileSync, stat, writeFileSync } from "fs";
+import { readFileSync, writeFileSync } from "fs";
 import { webcrack } from "webcrack";
 
 type LiteralConstants = Record<string, number>;
 
 type Flow = t.SwitchCase;
+
+type FlowWithContext = string | null;
 
 type FlowPositions = Record<string, number>;
 
@@ -20,7 +22,7 @@ type FlowTransition =
 
         flowPositions: FlowPositions;
 
-        flowWithContextChange: string | null;
+        flowWithContextChange: FlowWithContext;
 
         flowBlockBody: Array<t.Statement>;
     }
@@ -34,8 +36,8 @@ type FlowTransition =
         trueFlowPositions: FlowPositions;
         falseFlowPositions: FlowPositions;
 
-        trueFlowWithContextChange: string | null;
-        falseFlowWithContextChange: string | null;
+        trueFlowWithContextChange: FlowWithContext;
+        falseFlowWithContextChange: FlowWithContext;
 
         remainLinearFlowBlockBody: Array<t.Statement>;
     }
@@ -206,27 +208,26 @@ function findNextNonEmptyFlow(
 
                     if (isBinaryExpressionInvolvingAllConstantParams(discriminant)) {
                         cffDispatchSwitch = innerPath;
+
                         cffLoop = innerPath.findParent((p) => p.isWhileStatement()) as NodePath<t.WhileStatement>;
 
                         console.log("CFF dispatch switch and loop found, eliminating deadcode...");
 
                         // Remove statement after break or return
                         cases.forEach(({ consequent }) => {
-                            for (let i = 0; i < consequent.length; i++) {
+                            for (let i = 0; i < consequent.length; i++)
                                 if (t.isReturnStatement(consequent[i])) {
                                     consequent.splice(i + 1, consequent.length - (i + 1));
 
                                     break;
                                 }
-                            }
 
-                            for (let i = 0; i < consequent.length; i++) {
+                            for (let i = 0; i < consequent.length; i++)
                                 if (t.isBreakStatement(consequent[i])) {
                                     consequent.splice(i + 1, consequent.length - (i + 1));
 
                                     break;
                                 }
-                            }
                         });
                     }
                 },
@@ -291,7 +292,7 @@ function findNextNonEmptyFlow(
 
             const { node: cffDispatchSwitchNode } = cffDispatchSwitch;
 
-            const finalizeFlowStatements = (statements: Array<t.Statement>): Array<t.Statement> => {
+            const finalizeFlowStatements = (statements: Array<t.Statement>, flowPositions: FlowPositions): Array<t.Statement> => {
                 statements = statements.filter(statement => !t.isBreakStatement(statement));
 
                 const removeStatementFromStatements = (statement: t.Statement) =>
@@ -312,8 +313,6 @@ function findNextNonEmptyFlow(
                                 .find(node => (
                                     t.isExpressionStatement(node) &&
                                     t.isAssignmentExpression(node.expression) &&
-                                    // UFAEGLFIYAWGFLAUYWFGAWYUFGHAWOUYIFAHGFUAH
-                                    // THIS CO0MES IN BRACNH
                                     t.isIdentifier(node.expression.left, { name: cffShouldReturnValueDeclarationName }) &&
                                     t.isBooleanLiteral(node.expression.right) &&
                                     node.expression.right.value
@@ -334,6 +333,19 @@ function findNextNonEmptyFlow(
                 statements.forEach(statement => {
                     if (isStatementFlowWithContextChange(statement))
                         removeStatementFromStatements(statement);
+                });
+
+                // Replace "slKK7_c + -142" -> "143 + -142"
+                // This will simplified on last step (webcrack)
+                traverse(t.file(t.program(statements)), {
+                    Identifier(path) {
+                        if (
+                            path.isReferencedIdentifier() &&
+                            path.isIdentifier() &&
+                            flowPositionParamNameSet.has(path.node.name)
+                        )
+                            path.replaceWith(t.valueToNode(flowPositions[path.node.name]));
+                    },
                 });
 
                 return statements;
@@ -641,9 +653,7 @@ function findNextNonEmptyFlow(
                     if (stopAtFlowSum !== null && flowPositionsSum === stopAtFlowSum)
                         break;
 
-                    console.log("Reached flow:", flowPositionsSum);
-
-                    if (cffLoop) {
+                    { // Detect end
                         const { test } = cffLoop.node;
 
                         if (!evaluteExpression(test, literalConstants, flowPositions)) {
@@ -652,6 +662,8 @@ function findNextNonEmptyFlow(
                             break;
                         }
                     }
+
+                    console.log("Reached flow:", flowPositionsSum);
 
                     const dynamicFlows = dynamicallyComputeFlows(cffDispatchSwitchNode.cases, literalConstants, flowPositions);
 
@@ -669,11 +681,11 @@ function findNextNonEmptyFlow(
                     const targetFlowTransition = computeFlowTransition(targetFlow, literalConstants, flowPositions);
 
                     if (targetFlowTransition.type === "end") {
-                        blockBody.push(...finalizeFlowStatements(targetFlowTransition.flowBlockBody));
+                        blockBody.push(...finalizeFlowStatements(targetFlowTransition.flowBlockBody, flowPositions));
 
                         break;
                     } else if (targetFlowTransition.type === "linear") {
-                        blockBody.push(...finalizeFlowStatements(targetFlowTransition.flowBlockBody));
+                        blockBody.push(...finalizeFlowStatements(targetFlowTransition.flowBlockBody, flowPositions));
 
                         literalConstants = targetFlowTransition.literalConstants;
                         flowPositions = targetFlowTransition.flowPositions;
@@ -700,7 +712,7 @@ function findNextNonEmptyFlow(
                         const falseBlock = reconstructBlock(falseLiteralConstants, falseFlowPositions, mergedSum);
 
                         blockBody.push(
-                            ...finalizeFlowStatements(targetFlowTransition.remainLinearFlowBlockBody),
+                            ...finalizeFlowStatements(targetFlowTransition.remainLinearFlowBlockBody, flowPositions),
                             t.ifStatement(
                                 targetFlowTransition.test,
                                 t.blockStatement(trueBlock),
@@ -749,5 +761,7 @@ function findNextNonEmptyFlow(
 
     const output = generate(ast);
 
-    writeFileSync("output/deobfuscated.js", output.code);
+    const { code: webcrackedDefobfuscatedCode } = await webcrack(output.code);
+
+    writeFileSync("output/deobfuscated.js", webcrackedDefobfuscatedCode);
 })();
