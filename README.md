@@ -23,68 +23,282 @@ You will see output like:
 <summary>Terminal</summary>
 
 ```
-CFF dispatch switch found, eliminating deadcode...
+CFF dispatch switch and loop found, eliminating deadcode...
 Simplified destructuring assignment to multiple assignments
 Simplified destructuring assignment to multiple assignments
-Constant holder: xJ7W0M_
-Constant holder internal property: _6TxUo
-Constant holder with context property: skf8if
-Dynamically computed switch case value "127" -> 127
-Dynamically computed switch case value "177" -> 177
-Dynamically computed switch case value "D4j7k3 - -83" -> -117
-Dynamically computed switch case value "182" -> 182
-Dynamically computed switch case value "-208" -> -208
-Dynamically computed switch case value "lH13IN5 - 175" -> -64
-Dynamically computed switch case value "gqf9Hja - 165" -> -220
-Dynamically computed switch case value "-181" -> -181
-Dynamically computed switch case value "xJ7W0M_._6TxUo.wXlctN + 277" -> NaN
-Dynamically computed switch case value "202" -> 202
-Dynamically computed switch case value "xJ7W0M_._6TxUo.wXlctN + 365" -> NaN
-Dynamically computed switch case value "-25" -> -25
-Dynamically computed switch case value "-218" -> -218
-Dynamically computed switch case value "142" -> 142
-Dynamically computed switch case value "D4j7k3 - 203" -> -403
-Dynamically computed switch case value "-122" -> -122
-Dynamically computed switch case value "40" -> 40
-Next flow: -64
-Flow with context changed: _6TxUo
-Dynamically computed switch case value "127" -> 127
-Dynamically computed switch case value "177" -> 177
-Dynamically computed switch case value "D4j7k3 - -83" -> 96
-Dynamically computed switch case value "182" -> 182
-Dynamically computed switch case value "-208" -> -208
-Dynamically computed switch case value "lH13IN5 - 175" -> -301
-Dynamically computed switch case value "gqf9Hja - 165" -> -33
-Dynamically computed switch case value "-181" -> -181
-Dynamically computed switch case value "xJ7W0M_._6TxUo.wXlctN + 277" -> 146
-Dynamically computed switch case value "202" -> 202
-Dynamically computed switch case value "xJ7W0M_._6TxUo.wXlctN + 365" -> 234
-Dynamically computed switch case value "-25" -> -25
-Dynamically computed switch case value "-218" -> -218
-Dynamically computed switch case value "142" -> 142
-Dynamically computed switch case value "D4j7k3 - 203" -> -190
-Dynamically computed switch case value "-122" -> -122
-Dynamically computed switch case value "40" -> 40
-Next flow: 96
-Flow with context changed: _6TxUo
-Dynamically computed switch case value "127" -> 127
-Dynamically computed switch case value "177" -> 177
-Dynamically computed switch case value "D4j7k3 - -83" -> -276
-Dynamically computed switch case value "182" -> 182
-Dynamically computed switch case value "-208" -> -208
-Dynamically computed switch case value "lH13IN5 - 175" -> -301
-Dynamically computed switch case value "gqf9Hja - 165" -> -33
-Dynamically computed switch case value "-181" -> -181
-Dynamically computed switch case value "xJ7W0M_._6TxUo.wXlctN + 277" -> 146
-Dynamically computed switch case value "202" -> 202
-Dynamically computed switch case value "xJ7W0M_._6TxUo.wXlctN + 365" -> 234
-Dynamically computed switch case value "-25" -> -25
-Dynamically computed switch case value "-218" -> -218
-Dynamically computed switch case value "142" -> 142
-Dynamically computed switch case value "D4j7k3 - 203" -> -562
-Dynamically computed switch case value "-122" -> -122
-Dynamically computed switch case value "40" -> 40
-Next flow: -231
+Constant holder: mqFC1h
+Constant holder internal property: psUqyio
+Constant holder with context property: UghOTyo
+Reached flow: -201
+Evaluted expression "rQkYZMn + d39YMJ !== -233" -> true
+Evaluted expression "d39YMJ - 186" -> -116
+Evaluted expression "242" -> 242
+Evaluted expression "d39YMJ - 128" -> -58
+Evaluted expression "-198" -> -198
+Evaluted expression "235" -> 235
+Evaluted expression "d39YMJ != 156 && d39YMJ != 268 && d39YMJ - 72" -> -2
+Evaluted expression "-85" -> -85
+Evaluted expression "196" -> 196
+Evaluted expression "143" -> 143
+Evaluted expression "d39YMJ - 91" -> -21
+Evaluted expression "179" -> 179
+Evaluted expression "rQkYZMn != -304 && rQkYZMn != -186 && rQkYZMn != -128 && rQkYZMn - -326" -> 55
+Evaluted expression "rQkYZMn != -555 && rQkYZMn - -322" -> 51
+Evaluted expression "d39YMJ - 118" -> -48
+Evaluted expression "mqFC1h.psUqyio.BoefGN + -317" -> NaN
+Evaluted expression "-71" -> -71
+Evaluted expression "-128" -> -128
+Evaluted expression "rQkYZMn - -301" -> 30
+Evaluted expression "d39YMJ != 268 && d39YMJ != 97 && d39YMJ - 72" -> -2
+Evaluted expression "-189" -> -189
+Evaluted expression "96" -> 96
+Evaluted expression "72" -> 72
+Evaluted expression "d39YMJ != 301 && d39YMJ != 156 && d39YMJ - 338" -> -268
+Evaluted expression "-209" -> -209
+Evaluted expression "32" -> 32
+Evaluted expression "d39YMJ - 271" -> -201
+Evaluted expression "-129" -> -129
+Evaluted expression "mqFC1h.psUqyio.W8j7WPj + 248" -> NaN
+Reached flow: -15
+Evaluted expression "rQkYZMn + d39YMJ !== -233" -> true
+Evaluted expression "d39YMJ - 186" -> -110
+Evaluted expression "242" -> 242
+Evaluted expression "d39YMJ - 128" -> -52
+Evaluted expression "-198" -> -198
+Evaluted expression "235" -> 235
+Evaluted expression "d39YMJ != 156 && d39YMJ != 268 && d39YMJ - 72" -> 4
+Evaluted expression "-85" -> -85
+Evaluted expression "196" -> 196
+Evaluted expression "143" -> 143
+Evaluted expression "d39YMJ - 91" -> -15
+Evaluted expression "179" -> 179
+Evaluted expression "rQkYZMn != -304 && rQkYZMn != -186 && rQkYZMn != -128 && rQkYZMn - -326" -> 235
+Evaluted expression "rQkYZMn != -555 && rQkYZMn - -322" -> 231
+Evaluted expression "d39YMJ - 118" -> -42
+Evaluted expression "mqFC1h.psUqyio.BoefGN + -317" -> -182
+Evaluted expression "-71" -> -71
+Evaluted expression "-128" -> -128
+Evaluted expression "rQkYZMn - -301" -> 210
+Evaluted expression "d39YMJ != 268 && d39YMJ != 97 && d39YMJ - 72" -> 4
+Evaluted expression "-189" -> -189
+Evaluted expression "96" -> 96
+Evaluted expression "72" -> 72
+Evaluted expression "d39YMJ != 301 && d39YMJ != 156 && d39YMJ - 338" -> -262
+Evaluted expression "-209" -> -209
+Evaluted expression "32" -> 32
+Evaluted expression "d39YMJ - 271" -> -195
+Evaluted expression "-129" -> -129
+Evaluted expression "mqFC1h.psUqyio.W8j7WPj + 248" -> 22
+Reached flow: 198
+Evaluted expression "rQkYZMn + d39YMJ !== -233" -> true
+Evaluted expression "d39YMJ - 186" -> 140
+Evaluted expression "242" -> 242
+Evaluted expression "d39YMJ - 128" -> 198
+Evaluted expression "-198" -> -198
+Evaluted expression "235" -> 235
+Evaluted expression "d39YMJ != 156 && d39YMJ != 268 && d39YMJ - 72" -> 254
+Evaluted expression "-85" -> -85
+Evaluted expression "196" -> 196
+Evaluted expression "143" -> 143
+Evaluted expression "d39YMJ - 91" -> 235
+Evaluted expression "179" -> 179
+Evaluted expression "rQkYZMn != -304 && rQkYZMn != -186 && rQkYZMn != -128 && rQkYZMn - -326" -> false
+Evaluted expression "rQkYZMn != -555 && rQkYZMn - -322" -> 194
+Evaluted expression "d39YMJ - 118" -> 208
+Evaluted expression "mqFC1h.psUqyio.BoefGN + -317" -> -182
+Evaluted expression "-71" -> -71
+Evaluted expression "-128" -> -128
+Evaluted expression "rQkYZMn - -301" -> 173
+Evaluted expression "d39YMJ != 268 && d39YMJ != 97 && d39YMJ - 72" -> 254
+Evaluted expression "-189" -> -189
+Evaluted expression "96" -> 96
+Evaluted expression "72" -> 72
+Evaluted expression "d39YMJ != 301 && d39YMJ != 156 && d39YMJ - 338" -> -12
+Evaluted expression "-209" -> -209
+Evaluted expression "32" -> 32
+Evaluted expression "d39YMJ - 271" -> 55
+Evaluted expression "-129" -> -129
+Evaluted expression "mqFC1h.psUqyio.W8j7WPj + 248" -> 22
+Reached flow: 140
+Evaluted expression "rQkYZMn + d39YMJ !== -233" -> true
+Evaluted expression "d39YMJ - 186" -> 140
+Evaluted expression "242" -> 242
+Evaluted expression "d39YMJ - 128" -> 198
+Evaluted expression "-198" -> -198
+Evaluted expression "235" -> 235
+Evaluted expression "d39YMJ != 156 && d39YMJ != 268 && d39YMJ - 72" -> 254
+Evaluted expression "-85" -> -85
+Evaluted expression "196" -> 196
+Evaluted expression "143" -> 143
+Evaluted expression "d39YMJ - 91" -> 235
+Evaluted expression "179" -> 179
+Evaluted expression "rQkYZMn != -304 && rQkYZMn != -186 && rQkYZMn != -128 && rQkYZMn - -326" -> false
+Evaluted expression "rQkYZMn != -555 && rQkYZMn - -322" -> 136
+Evaluted expression "d39YMJ - 118" -> 208
+Evaluted expression "mqFC1h.psUqyio.BoefGN + -317" -> -182
+Evaluted expression "-71" -> -71
+Evaluted expression "-128" -> -128
+Evaluted expression "rQkYZMn - -301" -> 115
+Evaluted expression "d39YMJ != 268 && d39YMJ != 97 && d39YMJ - 72" -> 254
+Evaluted expression "-189" -> -189
+Evaluted expression "96" -> 96
+Evaluted expression "72" -> 72
+Evaluted expression "d39YMJ != 301 && d39YMJ != 156 && d39YMJ - 338" -> -12
+Evaluted expression "-209" -> -209
+Evaluted expression "32" -> 32
+Evaluted expression "d39YMJ - 271" -> 55
+Evaluted expression "-129" -> -129
+Evaluted expression "mqFC1h.psUqyio.W8j7WPj + 248" -> 22
+Branch detected in CFF
+Evaluted expression "d39YMJ - 186" -> 140
+Evaluted expression "242" -> 242
+Evaluted expression "d39YMJ - 128" -> 198
+Evaluted expression "-198" -> -198
+Evaluted expression "235" -> 235
+Evaluted expression "d39YMJ != 156 && d39YMJ != 268 && d39YMJ - 72" -> 254
+Evaluted expression "-85" -> -85
+Evaluted expression "196" -> 196
+Evaluted expression "143" -> 143
+Evaluted expression "d39YMJ - 91" -> 235
+Evaluted expression "179" -> 179
+Evaluted expression "rQkYZMn != -304 && rQkYZMn != -186 && rQkYZMn != -128 && rQkYZMn - -326" -> 10
+Evaluted expression "rQkYZMn != -555 && rQkYZMn - -322" -> 6
+Evaluted expression "d39YMJ - 118" -> 208
+Evaluted expression "mqFC1h.psUqyio.BoefGN + -317" -> -182
+Evaluted expression "-71" -> -71
+Evaluted expression "-128" -> -128
+Evaluted expression "rQkYZMn - -301" -> -15
+Evaluted expression "d39YMJ != 268 && d39YMJ != 97 && d39YMJ - 72" -> 254
+Evaluted expression "-189" -> -189
+Evaluted expression "96" -> 96
+Evaluted expression "72" -> 72
+Evaluted expression "d39YMJ != 301 && d39YMJ != 156 && d39YMJ - 338" -> -12
+Evaluted expression "-209" -> -209
+Evaluted expression "32" -> 32
+Evaluted expression "d39YMJ - 271" -> 55
+Evaluted expression "-129" -> -129
+Evaluted expression "mqFC1h.psUqyio.W8j7WPj + 248" -> 22
+Evaluted expression "d39YMJ - 186" -> 140
+Evaluted expression "242" -> 242
+Evaluted expression "d39YMJ - 128" -> 198
+Evaluted expression "-198" -> -198
+Evaluted expression "235" -> 235
+Evaluted expression "d39YMJ != 156 && d39YMJ != 268 && d39YMJ - 72" -> 254
+Evaluted expression "-85" -> -85
+Evaluted expression "196" -> 196
+Evaluted expression "143" -> 143
+Evaluted expression "d39YMJ - 91" -> 235
+Evaluted expression "179" -> 179
+Evaluted expression "rQkYZMn != -304 && rQkYZMn != -186 && rQkYZMn != -128 && rQkYZMn - -326" -> false
+Evaluted expression "rQkYZMn != -555 && rQkYZMn - -322" -> 18
+Evaluted expression "d39YMJ - 118" -> 208
+Evaluted expression "mqFC1h.psUqyio.BoefGN + -317" -> -182
+Evaluted expression "-71" -> -71
+Evaluted expression "-128" -> -128
+Evaluted expression "rQkYZMn - -301" -> -3
+Evaluted expression "d39YMJ != 268 && d39YMJ != 97 && d39YMJ - 72" -> 254
+Evaluted expression "-189" -> -189
+Evaluted expression "96" -> 96
+Evaluted expression "72" -> 72
+Evaluted expression "d39YMJ != 301 && d39YMJ != 156 && d39YMJ - 338" -> -12
+Evaluted expression "-209" -> -209
+Evaluted expression "32" -> 32
+Evaluted expression "d39YMJ - 271" -> 55
+Evaluted expression "-129" -> -129
+Evaluted expression "mqFC1h.psUqyio.W8j7WPj + 248" -> 22
+Reached flow: 10
+Evaluted expression "rQkYZMn + d39YMJ !== -233" -> true
+Evaluted expression "d39YMJ - 186" -> 140
+Evaluted expression "242" -> 242
+Evaluted expression "d39YMJ - 128" -> 198
+Evaluted expression "-198" -> -198
+Evaluted expression "235" -> 235
+Evaluted expression "d39YMJ != 156 && d39YMJ != 268 && d39YMJ - 72" -> 254
+Evaluted expression "-85" -> -85
+Evaluted expression "196" -> 196
+Evaluted expression "143" -> 143
+Evaluted expression "d39YMJ - 91" -> 235
+Evaluted expression "179" -> 179
+Evaluted expression "rQkYZMn != -304 && rQkYZMn != -186 && rQkYZMn != -128 && rQkYZMn - -326" -> 10
+Evaluted expression "rQkYZMn != -555 && rQkYZMn - -322" -> 6
+Evaluted expression "d39YMJ - 118" -> 208
+Evaluted expression "mqFC1h.psUqyio.BoefGN + -317" -> -182
+Evaluted expression "-71" -> -71
+Evaluted expression "-128" -> -128
+Evaluted expression "rQkYZMn - -301" -> -15
+Evaluted expression "d39YMJ != 268 && d39YMJ != 97 && d39YMJ - 72" -> 254
+Evaluted expression "-189" -> -189
+Evaluted expression "96" -> 96
+Evaluted expression "72" -> 72
+Evaluted expression "d39YMJ != 301 && d39YMJ != 156 && d39YMJ - 338" -> -12
+Evaluted expression "-209" -> -209
+Evaluted expression "32" -> 32
+Evaluted expression "d39YMJ - 271" -> 55
+Evaluted expression "-129" -> -129
+Evaluted expression "mqFC1h.psUqyio.W8j7WPj + 248" -> 22
+Reached flow: 22
+Evaluted expression "rQkYZMn + d39YMJ !== -233" -> true
+Evaluted expression "d39YMJ - 186" -> 140
+Evaluted expression "242" -> 242
+Evaluted expression "d39YMJ - 128" -> 198
+Evaluted expression "-198" -> -198
+Evaluted expression "235" -> 235
+Evaluted expression "d39YMJ != 156 && d39YMJ != 268 && d39YMJ - 72" -> 254
+Evaluted expression "-85" -> -85
+Evaluted expression "196" -> 196
+Evaluted expression "143" -> 143
+Evaluted expression "d39YMJ - 91" -> 235
+Evaluted expression "179" -> 179
+Evaluted expression "rQkYZMn != -304 && rQkYZMn != -186 && rQkYZMn != -128 && rQkYZMn - -326" -> false
+Evaluted expression "rQkYZMn != -555 && rQkYZMn - -322" -> 18
+Evaluted expression "d39YMJ - 118" -> 208
+Evaluted expression "mqFC1h.psUqyio.BoefGN + -317" -> -182
+Evaluted expression "-71" -> -71
+Evaluted expression "-128" -> -128
+Evaluted expression "rQkYZMn - -301" -> -3
+Evaluted expression "d39YMJ != 268 && d39YMJ != 97 && d39YMJ - 72" -> 254
+Evaluted expression "-189" -> -189
+Evaluted expression "96" -> 96
+Evaluted expression "72" -> 72
+Evaluted expression "d39YMJ != 301 && d39YMJ != 156 && d39YMJ - 338" -> -12
+Evaluted expression "-209" -> -209
+Evaluted expression "32" -> 32
+Evaluted expression "d39YMJ - 271" -> 55
+Evaluted expression "-129" -> -129
+Evaluted expression "mqFC1h.psUqyio.W8j7WPj + 248" -> 22
+Reached flow: 18
+Evaluted expression "rQkYZMn + d39YMJ !== -233" -> true
+Evaluted expression "d39YMJ - 186" -> 136
+Evaluted expression "242" -> 242
+Evaluted expression "d39YMJ - 128" -> 194
+Evaluted expression "-198" -> -198
+Evaluted expression "235" -> 235
+Evaluted expression "d39YMJ != 156 && d39YMJ != 268 && d39YMJ - 72" -> 250
+Evaluted expression "-85" -> -85
+Evaluted expression "196" -> 196
+Evaluted expression "143" -> 143
+Evaluted expression "d39YMJ - 91" -> 231
+Evaluted expression "179" -> 179
+Evaluted expression "rQkYZMn != -304 && rQkYZMn != -186 && rQkYZMn != -128 && rQkYZMn - -326" -> false
+Evaluted expression "rQkYZMn != -555 && rQkYZMn - -322" -> 18
+Evaluted expression "d39YMJ - 118" -> 204
+Evaluted expression "mqFC1h.psUqyio.BoefGN + -317" -> -182
+Evaluted expression "-71" -> -71
+Evaluted expression "-128" -> -128
+Evaluted expression "rQkYZMn - -301" -> -3
+Evaluted expression "d39YMJ != 268 && d39YMJ != 97 && d39YMJ - 72" -> 250
+Evaluted expression "-189" -> -189
+Evaluted expression "96" -> 96
+Evaluted expression "72" -> 72
+Evaluted expression "d39YMJ != 301 && d39YMJ != 156 && d39YMJ - 338" -> -16
+Evaluted expression "-209" -> -209
+Evaluted expression "32" -> 32
+Evaluted expression "d39YMJ - 271" -> 51
+Evaluted expression "-129" -> -129
+Evaluted expression "mqFC1h.psUqyio.W8j7WPj + 248" -> 22
+Reached flow: -233
+Evaluted expression "rQkYZMn + d39YMJ !== -233" -> false
+CFF Loop condition met (false) at sum -233. Exiting flow
 Successfully deobfuscated, writing result to output/deobfuscated.js
 ```
 
@@ -94,6 +308,5 @@ Open `output/deobfuscated.js`, and you will have the deobfuscated code.
 
 ## Limitation
 
-You cannot deobfuscate code if the original unobfuscated code has branches or similar structures  
-
-**Will be supported later**
+If you try a complex code to this script, then the script never ends (since its causes infinite loop for some reason).  
+You may try to deobfuscate each CFF individually.
