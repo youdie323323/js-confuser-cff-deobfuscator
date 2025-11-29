@@ -8,10 +8,45 @@ import { webcrack } from "webcrack";
 
 type LiteralConstants = Record<string, number>;
 
+type Flow = t.SwitchCase;
+
 type FlowPositions = Record<string, number>;
 
-const removeStatementFromConsequent = (ourCase: t.SwitchCase, statement: t.Statement) =>
-    ourCase.consequent = ourCase.consequent.filter(innerStatement => innerStatement !== statement);
+type FlowTransition =
+    | {
+        type: "linear";
+
+        literalConstants: LiteralConstants;
+
+        flowPositions: FlowPositions;
+
+        flowWithContextChange: string | null;
+
+        flowBlockBody: Array<t.Statement>;
+    }
+    | {
+        type: "branch";
+        test: t.Expression;
+
+        trueLiteralConstants: LiteralConstants;
+        falseLiteralConstants: LiteralConstants;
+
+        trueFlowPositions: FlowPositions;
+        falseFlowPositions: FlowPositions;
+
+        trueFlowWithContextChange: string | null;
+        falseFlowWithContextChange: string | null;
+
+        remainLinearFlowBlockBody: Array<t.Statement>;
+    }
+    | {
+        type: "end";
+
+        flowBlockBody: Array<t.Statement>;
+    };
+
+type FlowState =
+    { literalConstants: LiteralConstants; flowPositions: FlowPositions; sum: number };
 
 const numericLiteralOrUnaryExpressionToValue = (node: t.Expression): number =>
     t.isNumericLiteral(node)
@@ -26,22 +61,22 @@ const numericLiteralOrUnaryExpressionToValue = (node: t.Expression): number =>
                 : 0
         );
 
-function findNonEmptyCase(
-    cases: Array<t.SwitchCase>,
-    targetCase: t.SwitchCase,
-): t.SwitchCase | null {
-    if (targetCase.consequent.length > 0)
-        return targetCase;
+function findNextNonEmptyFlow(
+    flows: Array<Flow>,
+    flow: Flow,
+): Flow | null {
+    if (flow.consequent.length > 0)
+        return flow;
 
-    const targetIndex = cases.indexOf(targetCase);
-    if (targetIndex === -1)
+    const flowIndex = flows.indexOf(flow);
+    if (flowIndex === -1)
         return null;
 
-    for (let i = targetIndex + 1; i < cases.length; i++) {
-        const nextCase = cases[i];
+    for (let i = flowIndex + 1; i < flows.length; i++) {
+        const nextFlow = flows[i];
 
-        if (nextCase.consequent.length > 0)
-            return nextCase;
+        if (nextFlow.consequent.length > 0)
+            return nextFlow;
     }
 
     return null;
@@ -146,16 +181,7 @@ function findNonEmptyCase(
                         : null,
             );
 
-            const literalConstants: LiteralConstants = {};
-
             const flowPositionParamNameSet = new Set(flowPositionParamNames);
-
-            const flowPositions: Record<string, number> = {};
-
-            cffStartCall.arguments.forEach((node, i) => {
-                flowPositions[flowPositionParamNames[i]] =
-                    numericLiteralOrUnaryExpressionToValue(node as t.Expression);
-            });
 
             const isBinaryExpressionInvolvingAllConstantParams = (expression: t.Node): boolean => {
                 if (t.isIdentifier(expression))
@@ -172,14 +198,17 @@ function findNonEmptyCase(
 
             let constantHolderWithContextPropertyName: string;
 
+            let cffLoop: NodePath<t.WhileStatement>;
+
             traverse(node, {
                 SwitchStatement(innerPath) {
                     const { node: { discriminant, cases } } = innerPath;
 
                     if (isBinaryExpressionInvolvingAllConstantParams(discriminant)) {
                         cffDispatchSwitch = innerPath;
+                        cffLoop = innerPath.findParent((p) => p.isWhileStatement()) as NodePath<t.WhileStatement>;
 
-                        console.log("CFF dispatch switch found, eliminating deadcode...");
+                        console.log("CFF dispatch switch and loop found, eliminating deadcode...");
 
                         // Remove statement after break or return
                         cases.forEach(({ consequent }) => {
@@ -251,7 +280,7 @@ function findNonEmptyCase(
             }, path.scope);
 
             // Dispatch switch not found
-            if (!cffDispatchSwitch)
+            if (!(cffDispatchSwitch && cffLoop))
                 return;
 
             { // Log informations
@@ -260,55 +289,54 @@ function findNonEmptyCase(
                 console.log("Constant holder with context property:", constantHolderWithContextPropertyName);
             }
 
-            const finalizeFlow = (ourCase: t.SwitchCase): t.SwitchCase => {
-                const clonedCase = t.cloneNode(ourCase, true);
+            const { node: cffDispatchSwitchNode } = cffDispatchSwitch;
 
-                clonedCase.consequent = clonedCase.consequent.filter(statement => !t.isBreakStatement(statement));
+            const finalizeFlowStatements = (statements: Array<t.Statement>): Array<t.Statement> => {
+                statements = statements.filter(statement => !t.isBreakStatement(statement));
 
-                clonedCase.consequent.forEach((statement) => {
+                const removeStatementFromStatements = (statement: t.Statement) =>
+                    statements = statements.filter(innerStatement => innerStatement !== statement);
+
+                statements.forEach(statement => {
                     if (isLiteralConstantsStepStatement(statement))
-                        removeStatementFromConsequent(clonedCase, statement);
+                        removeStatementFromStatements(statement);
                 });
 
-                clonedCase.consequent.forEach((statement, i) => {
+                statements.forEach((statement, i) => {
                     if (
                         t.isReturnStatement(statement) &&
                         statement.argument
                     ) {
                         const cffShouldReturnValueDeclarationTrueAssignment =
-                            clonedCase.consequent.slice(0, i)
+                            statements.slice(0, i)
                                 .find(node => (
                                     t.isExpressionStatement(node) &&
                                     t.isAssignmentExpression(node.expression) &&
+                                    // UFAEGLFIYAWGFLAUYWFGAWYUFGHAWOUYIFAHGFUAH
+                                    // THIS CO0MES IN BRACNH
                                     t.isIdentifier(node.expression.left, { name: cffShouldReturnValueDeclarationName }) &&
                                     t.isBooleanLiteral(node.expression.right) &&
                                     node.expression.right.value
                                 ));
 
                         if (cffShouldReturnValueDeclarationTrueAssignment)
-                            removeStatementFromConsequent(clonedCase, cffShouldReturnValueDeclarationTrueAssignment);
+                            removeStatementFromStatements(cffShouldReturnValueDeclarationTrueAssignment);
                         else
-                            clonedCase.consequent[i] = t.expressionStatement(statement.argument);
+                            statements[i] = t.expressionStatement(statement.argument);
                     }
                 });
 
-                clonedCase.consequent.forEach(statement => {
-                    if (
-                        t.isExpressionStatement(statement) &&
-                        t.isAssignmentExpression(statement.expression) &&
-                        statement.expression.operator === "+=" &&
-                        t.isIdentifier(statement.expression.left) &&
-                        flowPositionParamNameSet.has(statement.expression.left.name)
-                    )
-                        removeStatementFromConsequent(clonedCase, statement);
+                statements.forEach(statement => {
+                    if (isFlowPositionStepStatement(statement))
+                        removeStatementFromStatements(statement);
                 });
 
-                clonedCase.consequent.forEach(statement => {
+                statements.forEach(statement => {
                     if (isStatementFlowWithContextChange(statement))
-                        removeStatementFromConsequent(clonedCase, statement);
+                        removeStatementFromStatements(statement);
                 });
 
-                return clonedCase;
+                return statements;
             };
 
             const summateFlowPositions = (flowPositions: FlowPositions): number =>
@@ -317,36 +345,44 @@ function findNonEmptyCase(
                     0,
                 );
 
-            const dynamicComputeFlowsWithFlowPositions = (
-                cases: Array<t.SwitchCase>,
+            const evaluteExpression = (
+                expression: t.Expression,
                 literalConstants: LiteralConstants,
+                flowPositions: FlowPositions,
+            ) => {
+                const { code } = generate(expression);
+
+                const value = new Function(
+                    ...flowPositionParamNameSet,
+                    constantHolderName,
+                    "return " + code,
+                )(
+                    ...Object.values(flowPositions),
+                    {
+                        [constantHolderInternalPropertyName]: literalConstants,
+                    },
+                );
+
+                console.log(`Evaluted expression "${code}" ->`, value);
+
+                return value;
+            };
+
+            const dynamicallyComputeFlows = (
+                flows: Array<Flow>,
+                literalConstants: LiteralConstants,
+                flowPositions: FlowPositions,
             ) =>
-                cases.map(ourCase => {
-                    if (ourCase.test)
-                        try {
-                            const { code } = generate(ourCase.test);
+                flows.map(ourCase => {
+                    if (ourCase.test) {
+                        // We"re not going to replace test, because next dynamicComputeSwitchCasesWithFlowPositions call uses test
 
-                            // We"re not going to replace test, because next dynamicComputeSwitchCasesWithFlowPositions call uses test
+                        const clonedOurCase = t.cloneNode(ourCase, true);
 
-                            const clonedOurCase = t.cloneNode(ourCase, true);
+                        clonedOurCase.test = t.valueToNode(evaluteExpression(ourCase.test, literalConstants, flowPositions));
 
-                            const value = new Function(
-                                ...flowPositionParamNameSet,
-                                constantHolderName,
-                                "return " + code,
-                            )(
-                                ...Object.values(flowPositions),
-                                {
-                                    [constantHolderInternalPropertyName]: literalConstants,
-                                },
-                            );
-
-                            console.log(`Dynamically computed switch case value "${code}" ->`, value);
-
-                            clonedOurCase.test = t.valueToNode(value);
-
-                            return clonedOurCase;
-                        } catch (e) { }
+                        return clonedOurCase;
+                    }
 
                     return ourCase;
                 });
@@ -372,27 +408,58 @@ function findNonEmptyCase(
                 t.isIdentifier(statement.expression.left.object.property, { name: constantHolderInternalPropertyName }) &&
                 t.isIdentifier(statement.expression.left.property);
 
-            const stepLiteralConstantsByFlow = ({ consequent }: t.SwitchCase, literalConstants: LiteralConstants) =>
-                consequent.forEach((statement) => {
+            const stepLiteralConstants = (
+                statements: Array<t.Statement>,
+                literalConstants: LiteralConstants,
+            ) => {
+                for (const statement of statements)
                     if (isLiteralConstantsStepStatement(statement))
                         literalConstants[statement.expression.left.property.name] =
                             numericLiteralOrUnaryExpressionToValue(statement.expression.right);
-                });
 
-            const stepFlowPositionsByFlow = ({ consequent }: t.SwitchCase, flowPositions: FlowPositions) =>
-                consequent.forEach(statement => {
-                    if (
-                        t.isExpressionStatement(statement) &&
-                        t.isAssignmentExpression(statement.expression) &&
-                        statement.expression.operator === "+=" &&
-                        t.isIdentifier(statement.expression.left) &&
-                        flowPositionParamNameSet.has(statement.expression.left.name)
-                    )
-                        flowPositions[statement.expression.left.name] +=
+                return literalConstants;
+            };
+
+            const isFlowPositionStepStatement = (statement: t.Statement): statement is t.ExpressionStatement & {
+                expression: t.AssignmentExpression & {
+                    operator: "+=";
+                    left: t.Identifier;
+                };
+            } =>
+                t.isExpressionStatement(statement) &&
+                t.isAssignmentExpression(statement.expression) &&
+                statement.expression.operator === "+=" &&
+                t.isIdentifier(statement.expression.left) &&
+                flowPositionParamNameSet.has(statement.expression.left.name);
+
+            const stepFlowPositions = (
+                statements: Array<t.Statement>,
+                flowPositions: FlowPositions,
+            ): FlowPositions => {
+                const steppedFlowPositions = structuredClone(flowPositions);
+
+                statements.forEach(statement => {
+                    if (isFlowPositionStepStatement(statement))
+                        steppedFlowPositions[statement.expression.left.name] +=
                             numericLiteralOrUnaryExpressionToValue(statement.expression.right);
                 });
 
-            const isStatementFlowWithContextChange = (statement: t.Statement) =>
+                return steppedFlowPositions;
+            };
+
+            const isStatementFlowWithContextChange = (statement: t.Statement): statement is t.ExpressionStatement & {
+                expression: t.AssignmentExpression & {
+                    operator: "=";
+                    left: t.MemberExpression & {
+                        object: t.Identifier;
+                        property: t.Identifier;
+                    };
+                    right: t.MemberExpression & {
+                        object: t.Identifier;
+                        property: t.Identifier;
+                    };
+                };
+            } =>
                 t.isExpressionStatement(statement) &&
                 t.isAssignmentExpression(statement.expression) &&
                 statement.expression.operator === "=" &&
@@ -401,60 +468,280 @@ function findNonEmptyCase(
                 t.isIdentifier(statement.expression.left.property, { name: constantHolderWithContextPropertyName }) &&
                 t.isMemberExpression(statement.expression.right) &&
                 t.isIdentifier(statement.expression.right.object, { name: constantHolderName }) &&
-                t.isIdentifier(statement.expression.right.property, { name: constantHolderInternalPropertyName });
+                t.isIdentifier(statement.expression.right.property);
 
-            let flowWithContext: string = constantHolderName;
+            const findLastFlowWithContextChange = (statements: Array<t.Statement>) => {
+                for (const statement of statements.reverse())
+                    if (isStatementFlowWithContextChange(statement))
+                        return statement.expression.right.property.name;
 
-            const updateFlowWithContextByFlow = ({ consequent }: t.SwitchCase) =>
-                consequent.forEach(statement => {
-                    if (isStatementFlowWithContextChange(statement)) {
-                        flowWithContext = constantHolderInternalPropertyName;
+                return null;
+            };
 
-                        console.log("Flow with context changed:", flowWithContext);
-                    }
-                });
+            const computeFlowTransition = (
+                { consequent }: Flow,
+                literalConstants: LiteralConstants,
+                flowPositions: FlowPositions,
+            ): FlowTransition => {
+                const flowBlockBody: Array<t.Statement> = new Array;
 
-            const originalBlockBody: Array<t.Statement> = new Array;
+                for (const statement of consequent) {
+                    if ( // if (test) flow += x else flow += y
+                        t.isIfStatement(statement) &&
+                        t.isBlockStatement(statement.consequent) &&
+                        statement.alternate
+                    ) {
+                        // If "if" appears, then statements is not appears after
 
-            const { node: cffDispatchSwitchNode } = cffDispatchSwitch;
+                        const { test, consequent: innerConsequent, alternate } = statement;
 
-            while (true) {
-                const dynamicFlows =
-                    dynamicComputeFlowsWithFlowPositions(cffDispatchSwitchNode.cases, literalConstants);
+                        const trueStatements =
+                            t.isBlockStatement(innerConsequent)
+                                ? innerConsequent.body
+                                : [innerConsequent];
 
-                const dynamicDefaultFlow =
-                    dynamicFlows.find(ourCase => !ourCase.test);
+                        const falseStatements =
+                            alternate
+                                ? (
+                                    t.isBlockStatement(alternate)
+                                        ? alternate.body
+                                        : [alternate]
+                                )
+                                : [];
 
+                        return {
+                            type: "branch",
+                            test,
+
+                            trueLiteralConstants: stepLiteralConstants(trueStatements, structuredClone(literalConstants)),
+                            falseLiteralConstants: stepLiteralConstants(falseStatements, structuredClone(literalConstants)),
+
+                            trueFlowPositions: stepFlowPositions(trueStatements, flowPositions),
+                            falseFlowPositions: stepFlowPositions(falseStatements, flowPositions),
+
+                            trueFlowWithContextChange: findLastFlowWithContextChange(trueStatements),
+                            falseFlowWithContextChange: findLastFlowWithContextChange(falseStatements),
+
+                            remainLinearFlowBlockBody: flowBlockBody,
+                        };
+                    } else // Push statement to block body if not "if"
+                        flowBlockBody.push(statement);
+
+                    if (t.isReturnStatement(statement))
+                        return { type: "end", flowBlockBody };
+
+                    if (t.isBreakStatement(statement)) // If "if" not appears, its linear
+                        break;
+
+                    if (isLiteralConstantsStepStatement(statement))
+                        literalConstants[statement.expression.left.property.name] =
+                            numericLiteralOrUnaryExpressionToValue(statement.expression.right);
+
+                    if (isFlowPositionStepStatement(statement))
+                        flowPositions[statement.expression.left.name] +=
+                            numericLiteralOrUnaryExpressionToValue(statement.expression.right);
+                }
+
+                return {
+                    type: "linear",
+
+                    literalConstants,
+
+                    flowPositions,
+
+                    flowWithContextChange: findLastFlowWithContextChange(consequent),
+
+                    flowBlockBody,
+                };
+            };
+
+            const computeNextFlowState = (
+                literalConstants: LiteralConstants,
+                flowPositions: FlowPositions,
+            ): FlowState | null => {
                 const flowPositionsSum = summateFlowPositions(flowPositions);
 
-                console.log("Next flow:", flowPositionsSum);
+                const dynamicFlows = dynamicallyComputeFlows(cffDispatchSwitchNode.cases, literalConstants, flowPositions);
 
-                const dynamicFlow = findNonEmptyCase(
-                    dynamicFlows,
-                    dynamicFlows
-                        .find(
-                            (ourCase) =>
-                                ourCase.test &&
-                                flowPositionsSum === numericLiteralOrUnaryExpressionToValue(ourCase.test),
-                        ) ||
-                    // If not found, its default case
-                    dynamicDefaultFlow, // TODO: if defaultCFFDispatchSwitchCase is undefined too, return
-                );
+                const targetFlow =
+                    dynamicFlows.find(ourCase => ourCase.test && flowPositionsSum === numericLiteralOrUnaryExpressionToValue(ourCase.test)) ||
+                    dynamicFlows.find(ourCase => !ourCase.test);
+                if (!targetFlow)
+                    return null;
 
-                // Push to block body for construction
-                originalBlockBody.push(...finalizeFlow(dynamicFlow).consequent);
+                const targetFlowTransition = computeFlowTransition(targetFlow, literalConstants, flowPositions);
+                if (targetFlowTransition.type !== "linear")
+                    return null;
 
-                if (dynamicFlow.consequent.find(statement => t.isReturnStatement(statement))) // If return is found, break the loop
-                    break;
+                const { flowPositions: appliedFlowPositions, literalConstants: appliedLiteralConstants } = targetFlowTransition;
 
-                stepLiteralConstantsByFlow(dynamicFlow, literalConstants);
-                stepFlowPositionsByFlow(dynamicFlow, flowPositions);
+                return {
+                    flowPositions: appliedFlowPositions,
+                    sum: summateFlowPositions(appliedFlowPositions),
+                    literalConstants: appliedLiteralConstants,
+                };
+            };
 
-                updateFlowWithContextByFlow(dynamicFlow);
-            }
+            const findMergeState = (
+                aLiteralConstants: LiteralConstants,
+                bLiteralConstants: LiteralConstants,
+
+                aFirstFlowPositions: FlowPositions,
+                bFirstFlowPositions: FlowPositions,
+            ): number | null => {
+                const MAX_STEPS = 500;
+
+                const statesA: Array<FlowState> = [{ literalConstants: aLiteralConstants, flowPositions: structuredClone(aFirstFlowPositions), sum: summateFlowPositions(aFirstFlowPositions) }];
+                const statesB: Array<FlowState> = [{ literalConstants: bLiteralConstants, flowPositions: structuredClone(bFirstFlowPositions), sum: summateFlowPositions(bFirstFlowPositions) }];
+
+                // Follow the paths of A and B step by step and find if they have a common sum
+                // This is a heuristic approach, not a strict graph analysis
+                for (let i = 0; i < MAX_STEPS; i++) {
+                    const { literalConstants: aLastLiteralConstants, flowPositions: aLastFlowPositions, sum: aLastSum } = statesA[statesA.length - 1];
+                    const { literalConstants: bLastLiteralConstants, flowPositions: bLastFlowPositions, sum: bLastSum } = statesB[statesB.length - 1];
+
+                    if (aLastSum === bLastSum)
+                        return aLastSum;
+
+                    const aNextFlowState = computeNextFlowState(aLastLiteralConstants, aLastFlowPositions);
+                    if (!aNextFlowState)
+                        break; // Dead end
+
+                    statesA.push(aNextFlowState);
+
+                    // Compute next step B
+                    const bNextFlowState = computeNextFlowState(bLastLiteralConstants, bLastFlowPositions);
+                    if (!bNextFlowState)
+                        break;
+
+                    statesB.push(bNextFlowState);
+
+                    const iAdd1 = i + 1;
+
+                    const { sum: aIAdd1Sum } = statesA[iAdd1];
+                    const { sum: bIAdd1Sum } = statesB[iAdd1];
+
+                    if (aIAdd1Sum === bIAdd1Sum)
+                        return aIAdd1Sum;
+                }
+
+                return null;
+            };
+
+            const reconstructBlock = (
+                literalConstants: LiteralConstants,
+                flowPositions: FlowPositions,
+                stopAtFlowSum: number | null = null,
+            ): Array<t.Statement> => {
+                const blockBody: Array<t.Statement> = new Array;
+
+                while (true) {
+                    const flowPositionsSum = summateFlowPositions(flowPositions);
+
+                    if (stopAtFlowSum !== null && flowPositionsSum === stopAtFlowSum)
+                        break;
+
+                    console.log("Reached flow:", flowPositionsSum);
+
+                    if (cffLoop) {
+                        const { test } = cffLoop.node;
+
+                        if (!evaluteExpression(test, literalConstants, flowPositions)) {
+                            console.log(`CFF Loop condition met (false) at sum ${flowPositionsSum}. Exiting flow`);
+
+                            break;
+                        }
+                    }
+
+                    const dynamicFlows = dynamicallyComputeFlows(cffDispatchSwitchNode.cases, literalConstants, flowPositions);
+
+                    const targetFlow = findNextNonEmptyFlow(
+                        dynamicFlows,
+                        dynamicFlows.find(ourCase => ourCase.test && flowPositionsSum === numericLiteralOrUnaryExpressionToValue(ourCase.test)) ||
+                        dynamicFlows.find(ourCase => !ourCase.test),
+                    );
+                    if (!targetFlow) {
+                        console.log("Target flow not found, dead ended");
+
+                        break; // Dead end
+                    }
+
+                    const targetFlowTransition = computeFlowTransition(targetFlow, literalConstants, flowPositions);
+
+                    if (targetFlowTransition.type === "end") {
+                        blockBody.push(...finalizeFlowStatements(targetFlowTransition.flowBlockBody));
+
+                        break;
+                    } else if (targetFlowTransition.type === "linear") {
+                        blockBody.push(...finalizeFlowStatements(targetFlowTransition.flowBlockBody));
+
+                        literalConstants = targetFlowTransition.literalConstants;
+                        flowPositions = targetFlowTransition.flowPositions;
+                    } else if (targetFlowTransition.type === "branch") {
+                        console.log("Branch detected in CFF");
+
+                        const {
+                            trueLiteralConstants,
+                            falseLiteralConstants,
+
+                            trueFlowPositions,
+                            falseFlowPositions,
+                        } = targetFlowTransition;
+
+                        const mergedSum = findMergeState(
+                            trueLiteralConstants,
+                            falseLiteralConstants,
+
+                            trueFlowPositions,
+                            falseFlowPositions,
+                        );
+
+                        const trueBlock = reconstructBlock(trueLiteralConstants, trueFlowPositions, mergedSum);
+                        const falseBlock = reconstructBlock(falseLiteralConstants, falseFlowPositions, mergedSum);
+
+                        blockBody.push(
+                            ...finalizeFlowStatements(targetFlowTransition.remainLinearFlowBlockBody),
+                            t.ifStatement(
+                                targetFlowTransition.test,
+                                t.blockStatement(trueBlock),
+                                t.blockStatement(falseBlock),
+                            ),
+                        );
+
+                        if (mergedSum !== null) {
+                            let tempFlowPositions = trueFlowPositions;
+                            let tempLiteralConstants = trueLiteralConstants;
+
+                            while (summateFlowPositions(tempFlowPositions) !== mergedSum) {
+                                const next = computeNextFlowState(tempLiteralConstants, tempFlowPositions);
+                                if (!next)
+                                    break;
+
+                                tempFlowPositions = next.flowPositions;
+                                tempLiteralConstants = next.literalConstants;
+                            }
+
+                            flowPositions = tempFlowPositions;
+                            literalConstants = tempLiteralConstants;
+                        } else
+                            break;
+                    }
+                }
+
+                return blockBody;
+            };
+
+            const literalConstants: LiteralConstants = {};
+
+            const flowPositions: Record<string, number> = {};
+
+            cffStartCall.arguments.forEach((node, i) => {
+                flowPositions[flowPositionParamNames[i]] =
+                    numericLiteralOrUnaryExpressionToValue(node as t.Expression);
+            });
 
             // Finally we can replace body
-            resultDeclarationParent.body = originalBlockBody;
+            resultDeclarationParent.body = reconstructBlock(literalConstants, flowPositions);
         },
     });
 

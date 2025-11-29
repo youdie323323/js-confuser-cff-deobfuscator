@@ -25,11 +25,11 @@
     });
     Object.defineProperty(window.customElements, "define", {
       value: (a, b) => {
-        _6TxUo.aqU7X65 = b.prototype;
-        _6TxUo.x7WOs28 = class extends h {
+        psUqyio.drae5lD = b.prototype;
+        psUqyio.NINXwgo = class extends h {
           constructor() {
             super();
-            Object.setPrototypeOf(this, _6TxUo.aqU7X65);
+            Object.setPrototypeOf(this, psUqyio.drae5lD);
             if (!f) {
               e = true;
               try {
@@ -41,15 +41,18 @@
             f = false;
           }
         };
-        _6TxUo.HwXlXX = _6TxUo.x7WOs28.prototype;
-        x7WOs28.observedAttributes = b.observedAttributes;
-        HwXlXX.connectedCallback = aqU7X65.connectedCallback;
-        HwXlXX.disconnectedCallback = aqU7X65.disconnectedCallback;
-        HwXlXX.attributeChangedCallback = aqU7X65.attributeChangedCallback;
-        HwXlXX.adoptedCallback = aqU7X65.adoptedCallback;
+        NINXwgo.observedAttributes = b.observedAttributes;
+        EwWZ7J.connectedCallback = drae5lD.connectedCallback;
+        EwWZ7J.disconnectedCallback = drae5lD.disconnectedCallback;
+        EwWZ7J.attributeChangedCallback = drae5lD.attributeChangedCallback;
+        EwWZ7J.adoptedCallback = drae5lD.adoptedCallback;
         k.set(b, a);
         l.set(a, b);
-        return m.call(window.customElements, a, x7WOs28);
+        if (m) {
+          m.call(window.customElements, a, NINXwgo);
+        } else {
+          console.log("branch else");
+        }
       },
       configurable: true,
       writable: true
